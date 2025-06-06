@@ -82,7 +82,7 @@ export const LeftPart = () => {
 
   const handleTabChange = (tab: string) => {
     dispatch(setSelectedTab(tab));
-    dispatch(setCurrentUser({ id: "", username: "", publicKey: "" }));
+    dispatch(setCurrentUser({ id: "", username: "", publicKey: "", profilePic:"" }));
     dispatch(setCurrentGroup({ id: "", groupName: "", encryptionKey: "" }));
     dispatch(setMessages([]));
     dispatch(setGroupMessages([]));
@@ -293,10 +293,10 @@ export const LeftPart = () => {
             return (
               <div
                 key={user._id}
-                onClick={() => getMessageOnClickChat(user._id, user.username)}
+                onClick={() => getMessageOnClickChat(user._id, user.username, user.profilePic)}
                 className="h-28 w-[90%] bg-[#303346] rounded-4xl flex items-center flex-shrink-0 relative mt-10 cursor-pointer hover:bg-[#3a3a4a] transition-colors"
               >
-                <div className="h-12 w-12 rounded-full bg-white mx-8"></div>
+                <img src={user.profilePic} className="h-12 w-12 rounded-full bg-white mx-8"/>
                 <div className="text-white">
                   <h1>{user.username}</h1>
                   <h1 className="">

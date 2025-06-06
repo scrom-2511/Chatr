@@ -135,7 +135,7 @@ const DirectChat = () => {
       {currentUser.id !== "" && (
         <div className="h-full w-full flex flex-col items-center">
           <div className="h-20 w-[90%] bg-[#262837] rounded-4xl flex items-center mt-10 flex-shrink-0">
-            <div className="h-12 w-12 rounded-full bg-white mx-8"></div>
+            <img src={currentUser.profilePic} className="h-12 w-12 rounded-full bg-white mx-8"/>
             <h1 className="text-xl text-white">{currentUser.username}</h1>
           </div>
           <div className="h-[70%] w-[90%] my-10 relative flex flex-col-reverse justify-start gap-4 overflow-y-scroll">

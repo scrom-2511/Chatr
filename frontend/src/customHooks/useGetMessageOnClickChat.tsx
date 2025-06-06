@@ -10,7 +10,7 @@ import { decryptEncryptionKeyGroup } from "../utils/encryptionDecryption";
 const useGetMessageOnClickChat = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const getMessageOnClickChat = async (id: string, username: string) => {
+  const getMessageOnClickChat = async (id: string, username: string, profilePic:string) => {
     try {
       navigate(`/chat/${id}`);
       const req = await axios.get(
@@ -20,7 +20,8 @@ const useGetMessageOnClickChat = () => {
         }
       );
       const publicKey = req.data.publicKey
-      dispatch(setCurrentUser({ id, username, publicKey }));
+      console.log(profilePic)
+      dispatch(setCurrentUser({ id, username, publicKey, profilePic }));
       dispatch(setMessages(req.data.messages));
     } catch (error) {
       console.error("Error fetching messages:", error);

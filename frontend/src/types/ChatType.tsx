@@ -12,6 +12,7 @@ export interface CurrentUser {
   id: string;
   username: string;
   publicKey: string;
+  profilePic: string;
 }
 
 export interface Messages {
