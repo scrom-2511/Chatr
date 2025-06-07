@@ -147,7 +147,6 @@ const DirectChat = () => {
 
   return (
     <div className="h-full w-full flex">
-      {/* Right part only - LeftPart is now in ChatMain */}
       {currentUser.id !== "" && (
         <div className="h-full w-full flex flex-col items-center">
           <div className="h-20 w-[90%] bg-[#262837] rounded-4xl flex items-center mt-10 flex-shrink-0">
