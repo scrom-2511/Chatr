@@ -25,8 +25,9 @@ export const profilePictureControllerGrp = async (
 ):Promise<Response> => {
   try {
     const grpId = req.body.grpId;
-    const grp = await Group.findByIdAndUpdate(grpId, {profilePic:url});
-    return res.json({message:"image upload successfull"})
+    const grp = await Group.findByIdAndUpdate(grpId, {grpProfilePic:url});
+    console.log("yoo")
+    return res.json({message:"image upload successfull"});
   } catch (error) {
     console.log(error)
     return res.json({message:"image upload failed"})

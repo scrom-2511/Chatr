@@ -39,7 +39,7 @@ const GroupInfo = () => {
     formData.append("grpId", currentGroup.id);
 
     try {
-      await axios.post("http://localhost:3000/user/profileImageUpload", formData);
+      await axios.post("http://localhost:3000/common/profileImageUpload", formData);
     } catch (error) {
       // Optionally log error silently
       console.error("Upload failed:", error);

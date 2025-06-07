@@ -19,10 +19,11 @@ router.post("/setLastMessage", (req: CustomRequest, res: Response) => {
 });
 
 router.post('/profileImageUpload', upload.single('profileImage'), async(req:CustomRequest, res:Response) => {
-  console.log(req.body.userId)
+  console.log(req.body)
   const result = await fileUpload(req.file?.path!, "profilePicture");
+  console.log(result)
   if(req.body.userId) await profilePictureControllerUser(req,res,result?.url!)
-  else await profilePictureControllerGrp(req,res,result?.url!)
+  else if(req.body.grpId) await profilePictureControllerGrp(req,res,result?.url!)
 })
 
 export default router;
