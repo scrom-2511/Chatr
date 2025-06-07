@@ -3,7 +3,7 @@ import { getLastMessageDirectController, getLastMessageGroupController, setLastM
 import { upload } from "../middleware/multer";
 import { CustomRequest } from "../customTypes/requestCustom";
 import { fileUpload } from "../utils/fileUpload";
-import { profilePictureControllerUser, profilePictureControllerGrp } from "../controllers/profilePictureController";
+import { profilePictureControllerUser, profilePictureControllerGrp, imagesInChatController } from "../controllers/imagesController";
 const router = Router();
 
 router.get("/getLastDirectMessage", (req: CustomRequest, res: Response) => {
@@ -18,12 +18,13 @@ router.post("/setLastMessage", (req: CustomRequest, res: Response) => {
   setLastMessageController(req, res);
 });
 
-router.post('/profileImageUpload', upload.single('profileImage'), async(req:CustomRequest, res:Response) => {
+router.post('/imageUpload', upload.single('image'), async(req:CustomRequest, res:Response) => {
   console.log(req.body)
   const result = await fileUpload(req.file?.path!);
   console.log(result)
   if(req.body.userId) await profilePictureControllerUser(req,res,result?.url!)
   else if(req.body.grpId) await profilePictureControllerGrp(req,res,result?.url!)
+  else await imagesInChatController(req,res,result?.url!)
 })
 
 export default router;

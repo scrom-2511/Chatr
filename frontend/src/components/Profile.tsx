@@ -38,11 +38,11 @@ const Profile = () => {
     reader.readAsDataURL(file);
 
     const formData = new FormData();
-    formData.append("profileImage", file);
+    formData.append("image", file);
     formData.append("userId", localStorage.getItem("myUserId")!);
 
     try {
-      await axios.post("http://localhost:3000/common/profileImageUpload", formData);
+      await axios.post("http://localhost:3000/common/imageUpload", formData);
     } catch (error) {
       console.error("Upload failed:", error);
     }
@@ -56,7 +56,7 @@ const Profile = () => {
           <input
             type="file"
             accept="image/*"
-            name="profileImage"
+            name="image"
             className="opacity-0 h-full w-full rounded-full absolute top-0 z-10"
             onChange={handleOnChange}
           />

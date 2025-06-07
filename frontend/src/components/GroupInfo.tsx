@@ -35,11 +35,11 @@ const GroupInfo = () => {
 
     // Upload file silently
     const formData = new FormData();
-    formData.append("profileImage", file);
+    formData.append("image", file);
     formData.append("grpId", currentGroup.id);
 
     try {
-      await axios.post("http://localhost:3000/common/profileImageUpload", formData);
+      await axios.post("http://localhost:3000/common/imageUpload", formData);
     } catch (error) {
       // Optionally log error silently
       console.error("Upload failed:", error);
@@ -52,7 +52,7 @@ const GroupInfo = () => {
           <input
             type="file"
             accept="image/*"
-            name="profileImage"
+            name="image"
             className="opacity-0 h-full w-full rounded-full absolute top-0 z-10"
             onChange={handleOnChange}
           />

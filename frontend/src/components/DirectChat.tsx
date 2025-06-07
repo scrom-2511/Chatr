@@ -16,6 +16,7 @@ import { decryptionDirect } from "../utils/encryptionDecryption";
 import { socket } from "../utils/socket";
 import useGetUsersAndGroups from "../customHooks/useGetUsersAndGroups";
 import { setUsers } from "../features/chat/UsersSlice";
+import axios from "axios";
 
 const DirectChat = () => {
   const [message, setMessage] = useState<Messages>();
@@ -124,19 +125,45 @@ const DirectChat = () => {
     decryptMessages();
   }, [messages]);
 
-  const handleOnChangeChatImage = (e:React.ChangeEvent<HTMLInputElement>)=>{
+  const handleOnChangeChatImage = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
-    if(!file) return;
+    if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = ()=>{
-      console.log(reader.result);
-      const imgMessage:Messages = {_id:"321445",encryptedSessionKeyReceiver:"",encryptedSessionKeySender:"",encryptedText:"",encryptionKey:{},isImage:true,recieverId:"",senderId: localStorage.getItem("myUserId")! ,text:reader.result as string}
-      const updatedMessages = [imgMessage, ...messages]
-      dispatch(setMessages(updatedMessages))
-    }
+    reader.onload = () => {
+      const imgMessage: Messages = {
+        _id: "",
+        encryptedSessionKeyReceiver: "",
+        encryptedSessionKeySender: "",
+        encryptedText: "",
+        encryptionKey: {},
+        isImage: true,
+        recieverId: "",
+        senderId: localStorage.getItem("myUserId")!,
+        text: reader.result as string,
+      };
+      const updatedMessages = [imgMessage, ...messages];
+      dispatch(setMessages(updatedMessages));
+    };
     reader.readAsDataURL(file);
-  }
+
+    const formData = new FormData();
+    formData.append("image", file);
+    formData.append("senderId", localStorage.getItem("myUserId")!);
+    formData.append("recieverId", currentUser.id);
+    console.log(formData);
+
+    try {
+      await axios.post(
+        "http://localhost:3000/common/imageUpload",
+        formData
+      );
+    } catch (error) {
+      console.error("Upload failed:", error);
+    }
+  };
 
   const handleKeyDownSendMessage = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -150,29 +177,37 @@ const DirectChat = () => {
       {currentUser.id !== "" && (
         <div className="h-full w-full flex flex-col items-center">
           <div className="h-20 w-[90%] bg-[#262837] rounded-4xl flex items-center mt-10 flex-shrink-0">
-            <img src={currentUser.profilePic} className="h-12 w-12 rounded-full bg-white mx-8"/>
+            <img
+              src={currentUser.profilePic}
+              className="h-12 w-12 rounded-full bg-white mx-8"
+            />
             <h1 className="text-xl text-white">{currentUser.username}</h1>
           </div>
           <div className="h-[70%] w-[90%] my-10 relative flex flex-col-reverse justify-start gap-4 overflow-y-scroll">
             {messages?.map((message) => {
-              const isSender = message.senderId === localStorage.getItem("myUserId");
-              if(message.isImage) console.log(message)
-              {return !message.isImage? (
-                <div
-                  key={message._id}
-                  className={`max-w-[90%] p-2 rounded-lg shadow-md break-words 
+              const isSender =
+                message.senderId === localStorage.getItem("myUserId");
+              if (message.isImage) console.log(message);
+              {
+                return !message.isImage ? (
+                  <div
+                    key={message._id}
+                    className={`max-w-[90%] p-2 rounded-lg shadow-md break-words 
                     ${
                       isSender ? "self-end bg-blue-300" : "self-start bg-white"
                     }`}
-                >
-                  {decryptedMessages[message._id] || "Decrypting..."}
-                </div>
-              ):( 
-                <img src={message.text} alt="" className={`h-50 w-50 bg-white object-cover 
-                  ${
-                    isSender? "self-end":"self-start"
-                  }`}/>
-              )}
+                  >
+                    {decryptedMessages[message._id] || "Decrypting..."}
+                  </div>
+                ) : (
+                  <img
+                    src={message.text}
+                    alt=""
+                    className={`h-50 w-50 bg-white object-cover 
+                  ${isSender ? "self-end" : "self-start"}`}
+                  />
+                );
+              }
             })}
           </div>
 
@@ -184,8 +219,20 @@ const DirectChat = () => {
               type="text"
               className="h-10 w-[90%] bg-[#262837] px-5"
             />
-            <img src="/images/plus.svg" alt="" className="h-20 w-20 z-10 invert absolute right-15" onClick={() => plusRef.current?.click()} />
-            <input ref={plusRef} type="file" placeholder="add" className="w-0 hidden" onChange={handleOnChangeChatImage} />
+            <img
+              src="/images/plus.svg"
+              alt=""
+              className="h-20 w-20 z-10 invert absolute right-15"
+              onClick={() => plusRef.current?.click()}
+            />
+            <input
+              ref={plusRef}
+              type="file"
+              accept="image/*"
+              name="image"
+              className="w-0 hidden"
+              onChange={handleOnChangeChatImage}
+            />
             <button
               onClick={() =>
                 sendMessageOnClickChat(currentUser, text, messages)
