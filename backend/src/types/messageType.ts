@@ -1,7 +1,8 @@
 import { z } from "zod";
 
-const messageType = z.object({
+export const messageType = z.object({
     senderId: z.string(),
     recieverId: z.string(),
-    text:z.string()
+    text:z.string(),
+    isImage:z.boolean().default(false)
 })

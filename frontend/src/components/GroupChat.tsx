@@ -166,6 +166,7 @@ const GroupChat = () => {
               type="text"
               className="h-10 w-[90%] bg-[#262837] px-5"
             />
+            <img src="/images/plus.svg" alt="" className="h-20 w-20 z-10 invert absolute right-15" />
             <button
               onClick={handleSendMessage}
               className="bg-[#084e6a] px-5 py-3 rounded-xl absolute right-0 hover:bg-[#0a5c7d] transition-colors"

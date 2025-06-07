@@ -6,6 +6,7 @@ const Profile = () => {
   const [userInfo, setUserInfo] = useState<Users>();
   const [myGroups, setMyGroups] = useState<Groups[]>([]);
   const [imgSrc, setImgSrc] = useState<string>("");
+  
   useEffect(() => {
     getUserInfo();
   }, []);
@@ -29,7 +30,6 @@ const Profile = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Preview image immediately
     const reader = new FileReader();
     reader.onload = () => {
       console.log(reader.result);
@@ -37,7 +37,6 @@ const Profile = () => {
     };
     reader.readAsDataURL(file);
 
-    // Upload file silently
     const formData = new FormData();
     formData.append("profileImage", file);
     formData.append("userId", localStorage.getItem("myUserId")!);
@@ -45,11 +44,11 @@ const Profile = () => {
     try {
       await axios.post("http://localhost:3000/common/profileImageUpload", formData);
     } catch (error) {
-      // Optionally log error silently
       console.error("Upload failed:", error);
     }
   };
 
+  
   return (
     <div className="h-full w-full flex text-white flex-col items-center">
       <div className="h-[70%] w-full flex flex-col items-center pt-30 gap-10">

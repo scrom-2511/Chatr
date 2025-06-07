@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../app/store";
 import {
@@ -11,7 +11,7 @@ import {
 import { setText } from "../features/chat/ExtraSlice";
 import useGetMessageFromURL from "../customHooks/useGetMessageFromURL";
 import useSendMessageOnClick from "../customHooks/useSendMessageOnClick";
-import { addMessage } from "../features/chat/MessageSlice";
+import { addMessage, setMessages } from "../features/chat/MessageSlice";
 import { decryptionDirect } from "../utils/encryptionDecryption";
 import { socket } from "../utils/socket";
 import useGetUsersAndGroups from "../customHooks/useGetUsersAndGroups";
@@ -37,6 +37,8 @@ const DirectChat = () => {
   const dispatch = useDispatch();
   const { sendMessageOnClickChat } = useSendMessageOnClick();
   const groups: Groups[] = useSelector((state: RootState) => state.groups);
+
+  const plusRef = useRef<HTMLInputElement>(null);
 
   // Update usersRef when users change
   useEffect(() => {
@@ -122,6 +124,20 @@ const DirectChat = () => {
     decryptMessages();
   }, [messages]);
 
+  const handleOnChangeChatImage = (e:React.ChangeEvent<HTMLInputElement>)=>{
+    const file = e.target.files?.[0];
+    if(!file) return;
+
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      console.log(reader.result);
+      const imgMessage:Messages = {_id:"321445",encryptedSessionKeyReceiver:"",encryptedSessionKeySender:"",encryptedText:"",encryptionKey:{},isImage:true,recieverId:"",senderId: localStorage.getItem("myUserId")! ,text:reader.result as string}
+      const updatedMessages = [imgMessage, ...messages]
+      dispatch(setMessages(updatedMessages))
+    }
+    reader.readAsDataURL(file);
+  }
+
   const handleKeyDownSendMessage = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -140,9 +156,9 @@ const DirectChat = () => {
           </div>
           <div className="h-[70%] w-[90%] my-10 relative flex flex-col-reverse justify-start gap-4 overflow-y-scroll">
             {messages?.map((message) => {
-              const isSender =
-                message.senderId === localStorage.getItem("myUserId");
-              return (
+              const isSender = message.senderId === localStorage.getItem("myUserId");
+              if(message.isImage) console.log(message)
+              {return !message.isImage? (
                 <div
                   key={message._id}
                   className={`max-w-[90%] p-2 rounded-lg shadow-md break-words 
@@ -152,7 +168,12 @@ const DirectChat = () => {
                 >
                   {decryptedMessages[message._id] || "Decrypting..."}
                 </div>
-              );
+              ):( 
+                <img src={message.text} alt="" className={`h-50 w-50 bg-white object-cover 
+                  ${
+                    isSender? "self-end":"self-start"
+                  }`}/>
+              )}
             })}
           </div>
 
@@ -164,6 +185,8 @@ const DirectChat = () => {
               type="text"
               className="h-10 w-[90%] bg-[#262837] px-5"
             />
+            <img src="/images/plus.svg" alt="" className="h-20 w-20 z-10 invert absolute right-15" onClick={() => plusRef.current?.click()} />
+            <input ref={plusRef} type="file" placeholder="add" className="w-0 hidden" onChange={handleOnChangeChatImage} />
             <button
               onClick={() =>
                 sendMessageOnClickChat(currentUser, text, messages)

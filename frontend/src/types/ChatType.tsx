@@ -24,6 +24,7 @@ export interface Messages {
   encryptedSessionKeyReceiver: string;
   encryptedSessionKeySender: string;
   encryptionKey: object;
+  isImage:boolean;
 }
 
 export interface OnlineUser {

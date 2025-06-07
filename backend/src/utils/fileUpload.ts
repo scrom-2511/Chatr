@@ -6,13 +6,8 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-export const fileUpload = async (filePath: string, publicId:string) => {
-    const uploadResult = await cloudinary.uploader
-    .upload(
-      filePath,
-      {
-        public_id: publicId,
-      }
+export const fileUpload = async (filePath: string) => {
+    const uploadResult = await cloudinary.uploader.upload( filePath
     )
     .catch((error) => {
       console.log(error);
