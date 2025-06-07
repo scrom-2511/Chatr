@@ -5,6 +5,9 @@ const groupSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  grpProfilePic: {
+    type: String,
+  },
   groupMembers: [
     {
       type: mongoose.Schema.Types.ObjectId,
