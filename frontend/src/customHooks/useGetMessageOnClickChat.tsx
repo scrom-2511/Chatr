@@ -28,7 +28,7 @@ const useGetMessageOnClickChat = () => {
     }
   };
 
-  const getGroupMessageOnClickChat = async (groupId: string, groupName: string) => {
+  const getGroupMessageOnClickChat = async (groupId: string, groupName: string, grpProfilePic:string) => {
     try {
       navigate(`/groupChat/${groupId}`);
       const req = await axios.get(
@@ -41,7 +41,7 @@ const useGetMessageOnClickChat = () => {
       );
       const { decryptedEncryptionKey } = decryptEncryptionKeyGroup(req.data.encryptedEncryptionKey);
       socket.emit("joinGroup", groupId);
-      dispatch(setCurrentGroup({ id: groupId, groupName: groupName, encryptionKey: decryptedEncryptionKey }));
+      dispatch(setCurrentGroup({ id: groupId, groupName: groupName, encryptionKey: decryptedEncryptionKey, grpProfilePic:grpProfilePic }));
       dispatch(setGroupMessages(req.data.messages));
     } catch (error) {
       console.error("Error fetching group messages:", error);

@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { CurrentGroup } from "../../types/ChatType";
 
-const initialState:CurrentGroup = { id: "", groupName: "", encryptionKey: "" };
+const initialState:CurrentGroup = { id: "", groupName: "", encryptionKey: "", grpProfilePic:"" };
 
 export const CurrentGroupSlice = createSlice({
   name: "currentGroupData",

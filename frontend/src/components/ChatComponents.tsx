@@ -83,7 +83,7 @@ export const LeftPart = () => {
   const handleTabChange = (tab: string) => {
     dispatch(setSelectedTab(tab));
     dispatch(setCurrentUser({ id: "", username: "", publicKey: "", profilePic:"" }));
-    dispatch(setCurrentGroup({ id: "", groupName: "", encryptionKey: "" }));
+    dispatch(setCurrentGroup({ id: "", groupName: "", encryptionKey: "", grpProfilePic:"" }));
     dispatch(setMessages([]));
     dispatch(setGroupMessages([]));
     navigate("/chat");
@@ -241,7 +241,7 @@ export const LeftPart = () => {
               dispatch(setSelectedTab(""));
               navigate("/chat");
               dispatch(
-                setCurrentGroup({ id: "", groupName: "", encryptionKey: "" })
+                setCurrentGroup({ id: "", groupName: "", encryptionKey: "", grpProfilePic:"" })
               );
             }}
           >
@@ -340,11 +340,11 @@ export const LeftPart = () => {
                 onClick={() => {
                   selectedTab === "groupInfo"
                     ? dispatch(setSelectedTab("group"))
-                    : getGroupMessageOnClickChat(group._id, group.groupName);
-                  getGroupMessageOnClickChat(group._id, group.groupName);
+                    : getGroupMessageOnClickChat(group._id, group.groupName, group.grpProfilePic);
+                  getGroupMessageOnClickChat(group._id, group.groupName, group.grpProfilePic);
                 }}
               >
-                <div className="h-12 w-12 rounded-full bg-white mx-8"></div>
+                <img src={group.grpProfilePic} className="h-12 w-12 rounded-full bg-white mx-8"/>
                 <div className="text-white">
                   <h1>{group.groupName}</h1>
                   <h1 className="">

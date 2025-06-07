@@ -36,6 +36,7 @@ export interface Groups {
   groupName: string;
   groupMembers: string[];
   lastMessage: Messages;
+  grpProfilePic: string;
 }
 
 export interface GroupMessages {
@@ -49,5 +50,6 @@ export interface CurrentGroup {
   id: string;
   groupName: string;
   encryptionKey: string;
+  grpProfilePic:string;
 }
 
