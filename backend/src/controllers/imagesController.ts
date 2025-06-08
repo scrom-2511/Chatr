@@ -40,13 +40,13 @@ export const imagesInChatController = async (
   res: Response,
   url: string
 ): Promise<Response> => {
-  try{
-    const {senderId, recieverId} = req.body;
-    const message = await Message.create({isImage:true,encryptedText:url,senderId,recieverId});
-    return res.json({message: "success"})
+  try {
+    const { senderId, recieverId, encryptedSessionKeyReceiver, encryptedSessionKeySender } = req.body;
+    const message = await Message.create({ isImage: true, encryptedText: url, senderId, recieverId, encryptedSessionKeyReceiver, encryptedSessionKeySender });
+    return res.json({ message: "success" })
   }
-  catch(error){
+  catch (error) {
     console.log(error)
-    return res.json({message:"unsuccessfull"})
+    return res.json({ message: "unsuccessfull" })
   }
 };

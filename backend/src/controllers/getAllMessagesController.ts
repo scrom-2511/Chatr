@@ -16,7 +16,7 @@ export const getAllMessagesController = async (
       { recieverId: senderId, senderId: recieverId },
     ],
   })
-    .select("_id senderId recieverId encryptedText encryptedSessionKeyReceiver encryptedSessionKeySender")
+    .select("_id senderId recieverId encryptedText encryptedSessionKeyReceiver encryptedSessionKeySender isImage")
     .sort({ createdAt: -1 });
   const publicKey = await User.findById(recieverId).select("publicKey");
   if (!messages) return res.json({ message: "There are no messages" });

@@ -1,3 +1,4 @@
+import axios from "axios";
 import CryptoJS from "crypto-js";
 import forge from "node-forge";
 
@@ -12,8 +13,7 @@ export const encryptionDirect = (
 ) => {
     const sessionKey = generateSessionKeyDirect();
 
-    const publicKeyNormalReceiver =
-        forge.pki.publicKeyFromPem(publicKeyReceiver);
+    const publicKeyNormalReceiver = forge.pki.publicKeyFromPem(publicKeyReceiver);
     const publicKeyNormalSender = forge.pki.publicKeyFromPem(publicKeySender);
 
     const encryptedSessionKeyReceiver = forge.util.encode64(
@@ -33,6 +33,30 @@ export const encryptionDirect = (
     };
 };
 
+export const encryptionDirectImg = (
+    publicKeyReceiver: string,
+    publicKeySender: string,
+    imageBase64: string
+)=>{
+    const{ encryptedText, encryptedSessionKeyReceiver, encryptedSessionKeySender} =  encryptionDirect(publicKeyReceiver, publicKeySender, imageBase64);
+    const file = new File([encryptedText],"encrypted.enc",{type: "application/octet-stream"});
+    return {
+        file,
+        encryptedSessionKeyReceiver,
+        encryptedSessionKeySender,
+    };
+}
+
+export const decryptionDirectImg = async (url:string, encryptedSessionKeyReceiver: string, encryptedSessionKeySender: string)=>{
+    console.log("hey")
+    const res = await axios.get(url);
+    const urlAsText = res.data;
+    const {decryptedText} = decryptionDirect(urlAsText,encryptedSessionKeyReceiver, encryptedSessionKeySender) || {};
+    console.log(decryptedText);
+    return {decryptedText}
+
+}
+
 export const decryptionDirect = (
     text: string,
     encryptedSessionKeyReceiver: string,
@@ -48,25 +72,15 @@ export const decryptionDirect = (
     let decryptedSessionKey = null;
 
     try {
-        decryptedSessionKey = privateKeyNormal.decrypt(
-            forge.util.decode64(encryptedSessionKeyReceiver),
-            "RSAES-PKCS1-V1_5"
-        );
+        decryptedSessionKey = privateKeyNormal.decrypt( forge.util.decode64(encryptedSessionKeyReceiver),"RSAES-PKCS1-V1_5");
     } catch (error) {
-        try {
-            decryptedSessionKey = privateKeyNormal.decrypt(
-                forge.util.decode64(encryptedSessionKeySender),
-                "RSAES-PKCS1-V1_5"
-            );
+        try { decryptedSessionKey = privateKeyNormal.decrypt(forge.util.decode64(encryptedSessionKeySender), "RSAES-PKCS1-V1_5");
         } catch (error) {
             console.error("Second decryption failed", error);
         }
     }
 
-    const decryptedText = CryptoJS.AES.decrypt(
-        text,
-        decryptedSessionKey!
-    ).toString(CryptoJS.enc.Utf8);
+    const decryptedText = CryptoJS.AES.decrypt(text, decryptedSessionKey!).toString(CryptoJS.enc.Utf8);
     if (decryptedText) {
         return { decryptedText };
     }

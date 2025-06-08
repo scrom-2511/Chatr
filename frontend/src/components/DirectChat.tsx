@@ -12,7 +12,7 @@ import { setText } from "../features/chat/ExtraSlice";
 import useGetMessageFromURL from "../customHooks/useGetMessageFromURL";
 import useSendMessageOnClick from "../customHooks/useSendMessageOnClick";
 import { addMessage, setMessages } from "../features/chat/MessageSlice";
-import { decryptionDirect } from "../utils/encryptionDecryption";
+import { decryptionDirect, decryptionDirectImg, encryptionDirect, encryptionDirectImg } from "../utils/encryptionDecryption";
 import { socket } from "../utils/socket";
 import useGetUsersAndGroups from "../customHooks/useGetUsersAndGroups";
 import { setUsers } from "../features/chat/UsersSlice";
@@ -21,9 +21,7 @@ import axios from "axios";
 const DirectChat = () => {
   const [message, setMessage] = useState<Messages>();
   const [onlineUsers, setOnlineUsers] = useState<Array<OnlineUser>>([]);
-  const [decryptedMessages, setDecryptedMessages] = useState<{
-    [key: string]: string;
-  }>({});
+  const [decryptedMessages, setDecryptedMessages] = useState<{[key: string]: string}>({});
 
   const users: Users[] = useSelector((state: RootState) => state.users);
   const usersRef = useRef<Users[]>(users);
@@ -89,26 +87,45 @@ const DirectChat = () => {
 
   useGetMessageFromURL(users, groups);
 
-  // Decrypt messages
   useEffect(() => {
-    const decryptMessages = () => {
+    const decryptMessages = async () => {
       const newDecryptedMessages = { ...decryptedMessages };
       let hasNewMessages = false;
-
+    
       const messagesToDecrypt = messages.filter(
         (msg) => !newDecryptedMessages[msg._id]
       );
-
+    
       for (const msg of messagesToDecrypt) {
         try {
-          const result = decryptionDirect(
-            msg.encryptedText,
-            msg.encryptedSessionKeyReceiver,
-            msg.encryptedSessionKeySender
-          );
-          if (result?.decryptedText) {
-            newDecryptedMessages[msg._id] = result.decryptedText;
-            hasNewMessages = true;
+          if (!msg?.isImage) {
+            const result = decryptionDirect(
+              msg.encryptedText,
+              msg.encryptedSessionKeyReceiver,
+              msg.encryptedSessionKeySender
+            );
+    
+            if (result?.decryptedText) {
+              newDecryptedMessages[msg._id] = result.decryptedText;
+              hasNewMessages = true;
+            } else {
+              newDecryptedMessages[msg._id] = "Failed to decrypt message";
+              hasNewMessages = true;
+            }
+          } else {
+            const result = await decryptionDirectImg(
+              msg.encryptedText,
+              msg.encryptedSessionKeyReceiver,
+              msg.encryptedSessionKeySender
+            );
+    
+            if (result?.decryptedText) {
+              newDecryptedMessages[msg._id] = result.decryptedText;
+              hasNewMessages = true;
+            } else {
+              newDecryptedMessages[msg._id] = "Failed to decrypt image";
+              hasNewMessages = true;
+            }
           }
         } catch (error) {
           console.error(`Failed to decrypt message ${msg._id}:`, error);
@@ -116,7 +133,7 @@ const DirectChat = () => {
           hasNewMessages = true;
         }
       }
-
+    
       if (hasNewMessages) {
         setDecryptedMessages(newDecryptedMessages);
       }
@@ -130,9 +147,12 @@ const DirectChat = () => {
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const publicKeySender = localStorage.getItem("publicKeySender");
+    const publicKeyReciever = currentUser.publicKey;
+    if (!publicKeyReciever || !publicKeySender) return
 
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       const imgMessage: Messages = {
         _id: "",
         encryptedSessionKeyReceiver: "",
@@ -146,23 +166,24 @@ const DirectChat = () => {
       };
       const updatedMessages = [imgMessage, ...messages];
       dispatch(setMessages(updatedMessages));
+      const { file, encryptedSessionKeyReceiver, encryptedSessionKeySender } = encryptionDirectImg(publicKeyReciever, publicKeySender, reader.result as string);
+      const formData = new FormData();
+      formData.append("image", file);
+      formData.append("senderId", localStorage.getItem("myUserId")!);
+      formData.append("recieverId", currentUser.id);
+      formData.append("encryptedSessionKeyReceiver", encryptedSessionKeyReceiver)
+      formData.append("encryptedSessionKeySender", encryptedSessionKeySender)
+
+      try {
+        await axios.post(
+          "http://localhost:3000/common/imageUpload",
+          formData
+        );
+      } catch (error) {
+        console.error("Upload failed:", error);
+      }
     };
     reader.readAsDataURL(file);
-
-    const formData = new FormData();
-    formData.append("image", file);
-    formData.append("senderId", localStorage.getItem("myUserId")!);
-    formData.append("recieverId", currentUser.id);
-    console.log(formData);
-
-    try {
-      await axios.post(
-        "http://localhost:3000/common/imageUpload",
-        formData
-      );
-    } catch (error) {
-      console.error("Upload failed:", error);
-    }
   };
 
   const handleKeyDownSendMessage = (e: React.KeyboardEvent) => {
@@ -187,21 +208,20 @@ const DirectChat = () => {
             {messages?.map((message) => {
               const isSender =
                 message.senderId === localStorage.getItem("myUserId");
-              if (message.isImage) console.log(message);
+              // if (message.isImage) console.log(message);
               {
                 return !message.isImage ? (
                   <div
                     key={message._id}
                     className={`max-w-[90%] p-2 rounded-lg shadow-md break-words 
-                    ${
-                      isSender ? "self-end bg-blue-300" : "self-start bg-white"
-                    }`}
+                    ${isSender ? "self-end bg-blue-300" : "self-start bg-white"
+                      }`}
                   >
                     {decryptedMessages[message._id] || "Decrypting..."}
                   </div>
                 ) : (
                   <img
-                    src={message.text}
+                 src={ message.text || decryptedMessages[message._id] }
                     alt=""
                     className={`h-50 w-50 bg-white object-cover 
                   ${isSender ? "self-end" : "self-start"}`}

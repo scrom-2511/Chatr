@@ -7,7 +7,10 @@ cloudinary.config({
 });
 
 export const fileUpload = async (filePath: string) => {
-    const uploadResult = await cloudinary.uploader.upload( filePath
+    const uploadResult = await cloudinary.uploader.upload( 
+      filePath, {
+        resource_type:"auto"
+      }
     )
     .catch((error) => {
       console.log(error);
