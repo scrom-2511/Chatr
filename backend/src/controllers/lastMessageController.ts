@@ -48,7 +48,7 @@ export const setLastMessageController = async (
   if (!isGroupMessage) {
     const { senderId, recieverId, encryptedText,
       encryptedSessionKeySender,
-      encryptedSessionKeyReceiver, } = lastMessage;
+      encryptedSessionKeyReceiver, isImage } = lastMessage;
     await LastMessage.updateOne(
       {
         $or: [
@@ -64,6 +64,7 @@ export const setLastMessageController = async (
           encryptedSessionKeySender,
           encryptedSessionKeyReceiver,
           isGroupMessage: false,
+          isImage
         },
       },
       { upsert: true }

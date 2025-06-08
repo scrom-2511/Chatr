@@ -21,7 +21,6 @@ const Profile = () => {
     const response = await axios.get(
       `http://localhost:3000/user/userInfo/${localStorage.getItem("myUserId")}`
     );
-    console.log(response.data.userInfo)
     setUserInfo(response.data.userInfo);
     setMyGroups(response.data.userGroupsInfo);
   };
@@ -32,7 +31,6 @@ const Profile = () => {
 
     const reader = new FileReader();
     reader.onload = () => {
-      console.log(reader.result);
       setImgSrc(reader.result?.toString() || "");
     };
     reader.readAsDataURL(file);

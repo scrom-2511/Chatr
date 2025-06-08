@@ -60,7 +60,6 @@ export const LeftPart = () => {
     };
 
     const handleMessage = (data: Messages) => {
-      console.log(data.senderId);
       const usersUpdatedUsersOnMessage = users.map((user) =>
         user._id === data.senderId || user._id === data.recieverId
           ? { ...user, lastMessage: data }
@@ -77,7 +76,6 @@ export const LeftPart = () => {
   }, []);
 
   useEffect(() => {
-    console.log(currentGroup.id);
   }, [currentGroup.id]);
 
   const handleTabChange = (tab: string) => {

@@ -46,17 +46,14 @@ const onlineGroups = new Map();
 io.on("connection", (socket) => {
   socket.on("onlineUsers", (data) => {
     onlineUsers.set(data.userData.userId, socket.id);
-    console.log(onlineUsers);
 
     const onlineUsersArray = Array.from(onlineUsers.keys());
     io.emit("onlineUsers", onlineUsersArray);
   });
 
   socket.on("message", (data) => {
-    console.log(data);
     const recieverSocketId = onlineUsers.get(data.recieverId);
     if (!recieverSocketId) {
-      console.log("no reciever socket id found");
     }
     io.to(recieverSocketId).emit("messageNew", data);
   });
@@ -71,10 +68,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("newGroupMessage", (data) => {
-    console.log(data);
     const recievers = onlineGroups.get(data.groupId);
     if (!recievers) {
-      console.log("no reciever socket id found");
     } else {
       recievers.forEach((reciever: string) => {
         io.to(reciever).emit("newGroupMessage", data);

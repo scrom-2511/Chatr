@@ -62,7 +62,6 @@ const RightPart = () => {
           "http://localhost:3000/user/signup",
           data
         );
-        console.log(req.data); // Log to inspect response
         if (req.data.success === true) {
           dispatch(setUsername("")); // Clear username
           dispatch(setEmail("")); // Clear email

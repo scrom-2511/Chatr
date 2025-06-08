@@ -20,9 +20,7 @@ const useGetMessageOnClickChat = () => {
         }
       );
       const publicKey = req.data.publicKey
-      console.log(profilePic)
       dispatch(setCurrentUser({ id, username, publicKey, profilePic }));
-      console.log(req.data.messages)
       dispatch(setMessages(req.data.messages));
     } catch (error) {
       console.error("Error fetching messages:", error);

@@ -12,14 +12,12 @@ const useGroupOperations = () => {
   const selectedUsers = useSelector((state: RootState) => state.createGroup.selectedUsers);
   const selectedUsersPublicKey = useSelector((state: RootState) => state.createGroup.selectedUsersPublicKey);
   const createGroup = async () => {
-    console.log(typeof (selectedUsers));
     try {
       const req = await axios.post(`http://localhost:3000/groupMessage/createGroup`, {
         groupName: groupName,
         groupMembers: selectedUsers,
         publicKey: selectedUsersPublicKey
       })
-      console.log(req.data);
       dispatch(setGroupName(""));
       dispatch(setSelectedUsers([]));
     } catch (error) {
@@ -35,7 +33,6 @@ const useGroupOperations = () => {
           userId: userId
         }
       })
-      console.log(req.data);
     } catch (error) {
         console.log(error);
     }
@@ -64,7 +61,6 @@ const useGroupOperations = () => {
     const {decryptedEncryptionKey} =  await addGroup1();
     const decdecryptedEncryptionKeyFinal = decryptedEncryptionKey.toString();
     const {message} = await addGroup2(decdecryptedEncryptionKeyFinal);
-    console.log(message)
   }
 
   return { createGroup, leaveGroup, addGroup };

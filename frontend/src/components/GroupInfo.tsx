@@ -14,7 +14,6 @@ const GroupInfo = () => {
   const [imgSrc, setImgSrc] = useState<string>(currentGroup.grpProfilePic);
   const getAllGroupMembers = async () => {
     const req = await axios.get(`http://localhost:3000/group/getAllGroupMembers/${currentGroup.id}`)
-    console.log(req)
     dispatch(setCurrentGroupUsers(req.data))
   }
   useEffect(() => {
@@ -28,7 +27,6 @@ const GroupInfo = () => {
     // Preview image immediately
     const reader = new FileReader();
     reader.onload = () => {
-      console.log(reader.result);
       setImgSrc(reader.result?.toString() || "");
     };
     reader.readAsDataURL(file);
@@ -89,8 +87,6 @@ const GroupInfo = () => {
           className="h-28 w-[90%] bg-[#303346] rounded-4xl flex justify-center items-center flex-shrink-0 relative mt-10 hover:bg-[#3a3a4a] transition-colors cursor-pointer"
           onClick={()=>{
             dispatch(setGrpUsersSelectMenuVisible(true));
-            console.log(currentGroupUsers)
-            console.log(users)
           }}
         >
           <div className="text-white text-xl">ADD A NEW USER</div>

@@ -48,11 +48,9 @@ export const encryptionDirectImg = (
 }
 
 export const decryptionDirectImg = async (url:string, encryptedSessionKeyReceiver: string, encryptedSessionKeySender: string)=>{
-    console.log("hey")
     const res = await axios.get(url);
     const urlAsText = res.data;
     const {decryptedText} = decryptionDirect(urlAsText,encryptedSessionKeyReceiver, encryptedSessionKeySender) || {};
-    console.log(decryptedText);
     return {decryptedText}
 
 }

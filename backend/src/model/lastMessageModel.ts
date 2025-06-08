@@ -5,6 +5,7 @@ const lastMessageSchema = new mongoose.Schema({
     recieverId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     groupId: { type: mongoose.Schema.Types.ObjectId, ref: "Group" },
     isGroupMessage: { type: Boolean, default: false },
+    isImage: {type: Boolean, default: false},
     encryptedText: { type: String },
     encryptedSessionKeySender: { type: String },
     encryptedSessionKeyReceiver: { type: String }

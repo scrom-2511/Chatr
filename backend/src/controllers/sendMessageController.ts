@@ -7,30 +7,29 @@ export const sendMessageController = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const { senderId, encryptedText, encryptedSessionKeySender, encryptedSessionKeyReceiver } = req.body;
+    const { senderId, encryptedText, encryptedSessionKeySender, encryptedSessionKeyReceiver, isImage } = req.body;
     const recieverId = req.params.id;
     
     if (senderId === recieverId) {
       return res.status(400).json({ message: "Cannot send message to yourself", success: false });
     }
-    
-    // Create the message
     const newMessage = await Message.create({ 
       senderId, 
       recieverId, 
       encryptedText, 
       encryptedSessionKeySender,
-      encryptedSessionKeyReceiver
+      encryptedSessionKeyReceiver,
+      isImage
     });
 
-    // Format response data
     const data = {
       _id: newMessage._id,
       recieverId: newMessage.recieverId,
       senderId: newMessage.senderId,
       encryptedText: newMessage.encryptedText,
       encryptedSessionKeySender: newMessage.encryptedSessionKeySender,
-      encryptedSessionKeyReceiver: newMessage.encryptedSessionKeyReceiver
+      encryptedSessionKeyReceiver: newMessage.encryptedSessionKeyReceiver,
+      isImage:newMessage.isImage
     };
     
     return res.json({ data, success: true });

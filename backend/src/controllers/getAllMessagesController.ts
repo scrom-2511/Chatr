@@ -20,6 +20,5 @@ export const getAllMessagesController = async (
     .sort({ createdAt: -1 });
   const publicKey = await User.findById(recieverId).select("publicKey");
   if (!messages) return res.json({ message: "There are no messages" });
-  console.log(messages)
   return res.json({ messages, publicKey: publicKey?.publicKey });
 };

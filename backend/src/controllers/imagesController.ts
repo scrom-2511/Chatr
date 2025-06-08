@@ -27,7 +27,6 @@ export const profilePictureControllerGrp = async (
   try {
     const grpId = req.body.grpId;
     const grp = await Group.findByIdAndUpdate(grpId, { grpProfilePic: url });
-    console.log("yoo");
     return res.json({ message: "image upload successfull" });
   } catch (error) {
     console.log(error);
@@ -42,8 +41,17 @@ export const imagesInChatController = async (
 ): Promise<Response> => {
   try {
     const { senderId, recieverId, encryptedSessionKeyReceiver, encryptedSessionKeySender } = req.body;
-    const message = await Message.create({ isImage: true, encryptedText: url, senderId, recieverId, encryptedSessionKeyReceiver, encryptedSessionKeySender });
-    return res.json({ message: "success" })
+    const newImage = await Message.create({ isImage: true, encryptedText: url, senderId, recieverId, encryptedSessionKeyReceiver, encryptedSessionKeySender });
+    const data = {
+      _id: newImage._id,
+      recieverId: newImage.recieverId,
+      senderId: newImage.senderId,
+      encryptedText: newImage.encryptedText,
+      encryptedSessionKeySender: newImage.encryptedSessionKeySender,
+      encryptedSessionKeyReceiver: newImage.encryptedSessionKeyReceiver,
+      isImage:newImage.isImage
+    };
+    return res.json({ data, success: true })
   }
   catch (error) {
     console.log(error)

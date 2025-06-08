@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import {
   CurrentGroup,
   CurrentUser,
@@ -8,10 +8,11 @@ import {
   Messages,
   Users,
 } from "../types/ChatType";
-import { setMessages } from "../features/chat/MessageSlice";
+import { addMessage, setMessages } from "../features/chat/MessageSlice";
 import { setText } from "../features/chat/ExtraSlice";
 import {
   encryptionDirect,
+  encryptionDirectImg,
   encryptionGroup,
 } from "../utils/encryptionDecryption";
 import { socket } from "../utils/socket";
@@ -23,26 +24,15 @@ const useSendMessageOnClick = () => {
   const dispatch = useDispatch();
   const users: Users[] = useSelector((state: RootState) => state.users);
   const groups: Groups[] = useSelector((state: RootState) => state.groups);
-  const groupMessages: GroupMessages[] = useSelector(
-    (state: RootState) => state.groupMessages
-  );
+  const groupMessages: GroupMessages[] = useSelector((state: RootState) => state.groupMessages);
+  const currentUser: CurrentUser = useSelector((state: RootState) => state.currentUserData)
   const sendMessageOnClickChat = async (
-    currentUser: CurrentUser,
-    text: string,
-    messages: Messages[]
+    text: string
   ) => {
     try {
       if (text.trim() === "") return;
-      const {
-        encryptedText,
-        encryptedSessionKeyReceiver,
-        encryptedSessionKeySender,
-      } = encryptionDirect(
-        currentUser.publicKey,
-        localStorage.getItem("publicKeySender")!,
-        text
-      );
-      const req = await axios.post(
+      const { encryptedText, encryptedSessionKeyReceiver, encryptedSessionKeySender } = encryptionDirect(currentUser.publicKey, localStorage.getItem("publicKeySender")!, text);
+      const res = await axios.post(
         `http://localhost:3000/message/sendMessage/${currentUser.id}`,
         {
           encryptedText: encryptedText,
@@ -50,35 +40,68 @@ const useSendMessageOnClick = () => {
           encryptedSessionKeyReceiver: encryptedSessionKeyReceiver,
           senderId: localStorage.getItem("myUserId"),
           recieverId: currentUser.id,
+          isImage: false
         },
         { withCredentials: true }
       );
-      if (req.data.success) {
-        const lastMessageReq = await axios.post(
-          "http://localhost:3000/common/setLastMessage",
-          {
-            lastMessage: req.data.data,
-          },
-          { withCredentials: true }
-        );
-        if (lastMessageReq.data.success) {
-          socket.emit("message", req.data.data);
-          dispatch(setMessages([req.data.data, ...messages]));
-        }
-      }
-      dispatch(setText(""));
-      const topChat = users.find((user) => user._id === currentUser.id);
-      if (topChat) {
-        const updatedTopChat = { ...topChat, lastMessage: req.data.data };
-        const filteredUsers = users.filter(
-          (user) => user._id !== currentUser.id
-        );
-        dispatch(setUsers([updatedTopChat, ...filteredUsers]));
-      }
-    } catch (err) {
+      console.log(res.data.data)
+      handleLastMessage(res)
+    }
+    catch (err) {
       console.error("Error sending message:", err);
     }
   };
+
+  const sendImage = async (image: string) => {
+    try {
+      const publicKeySender = localStorage.getItem("publicKeySender");
+      const publicKeyReciever = currentUser.publicKey;
+      if (!publicKeyReciever || !publicKeySender) return;
+      const { file, encryptedSessionKeyReceiver, encryptedSessionKeySender } = encryptionDirectImg(publicKeyReciever, publicKeySender, image);
+      const formData = new FormData();
+      formData.append("image", file);
+      formData.append("senderId", localStorage.getItem("myUserId")!);
+      formData.append("recieverId", currentUser.id);
+      formData.append("encryptedSessionKeyReceiver", encryptedSessionKeyReceiver)
+      formData.append("encryptedSessionKeySender", encryptedSessionKeySender)
+      
+      const res = await axios.post(
+        "http://localhost:3000/common/imageUpload",
+        formData
+      );
+      console.log(res.data.data)
+      handleLastMessage(res)
+    } catch (error) {
+      console.error("Upload failed:", error);
+    }
+  };
+
+  const handleLastMessage = async (req: AxiosResponse) => {
+    if (req.data.success) {
+      const lastMessageReq = await axios.post(
+        "http://localhost:3000/common/setLastMessage",
+        {
+          lastMessage: req.data.data,
+        },
+        { withCredentials: true }
+      );
+      if (lastMessageReq.data.success) {
+        socket.emit("message", req.data.data);
+        // dispatch(setMessages([req.data.data, ...messages]));
+        // dispatch(addMessage(req.data.data));
+
+      }
+    }
+    dispatch(setText(""));
+    const topChat = users.find((user) => user._id === currentUser.id);
+    if (topChat) {
+      const updatedTopChat = { ...topChat, lastMessage: req.data.data };
+      const filteredUsers = users.filter(
+        (user) => user._id !== currentUser.id
+      );
+      dispatch(setUsers([updatedTopChat, ...filteredUsers]));
+    }
+  }
 
   const sendMessageOnClickGroup = async (
     currentGroup: CurrentGroup,
@@ -116,25 +139,12 @@ const useSendMessageOnClick = () => {
         }
       }
       dispatch(setText(""));
-      // if (groups.length > 1) {
-      //   const topChat = groups.find((group) => group._id === currentGroup.id);
-      //   if (topChat) {
-      //     const filteredGroups = groups.filter(
-      //       (group) => group._id !== currentGroup.id
-      //     );
-      //     const updatedTopChat = {
-      //       ...topChat,
-      //       lastMessage: req.data.newGroupMessage,
-      //     };
-      //     dispatch(setGroups([updatedTopChat, ...filteredGroups]));
-      //   }
-      // }
     } catch (err) {
       console.error("Error sending message:", err);
     }
   };
 
-  return { sendMessageOnClickChat, sendMessageOnClickGroup };
+  return { sendMessageOnClickChat, sendMessageOnClickGroup, sendImage };
 };
 
 export default useSendMessageOnClick;

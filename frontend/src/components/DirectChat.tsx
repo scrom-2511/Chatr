@@ -21,7 +21,7 @@ import axios from "axios";
 const DirectChat = () => {
   const [message, setMessage] = useState<Messages>();
   const [onlineUsers, setOnlineUsers] = useState<Array<OnlineUser>>([]);
-  const [decryptedMessages, setDecryptedMessages] = useState<{[key: string]: string}>({});
+  const [decryptedMessages, setDecryptedMessages] = useState<{ [key: string]: string }>({});
 
   const users: Users[] = useSelector((state: RootState) => state.users);
   const usersRef = useRef<Users[]>(users);
@@ -34,7 +34,7 @@ const DirectChat = () => {
   const text = useSelector((state: RootState) => state.extra.text);
 
   const dispatch = useDispatch();
-  const { sendMessageOnClickChat } = useSendMessageOnClick();
+  const { sendMessageOnClickChat, sendImage } = useSendMessageOnClick();
   const groups: Groups[] = useSelector((state: RootState) => state.groups);
 
   const plusRef = useRef<HTMLInputElement>(null);
@@ -42,7 +42,6 @@ const DirectChat = () => {
   // Update usersRef when users change
   useEffect(() => {
     usersRef.current = users;
-    console.log("Users updated in ref:", usersRef.current);
   }, [users]);
 
   // Load users and groups
@@ -58,22 +57,17 @@ const DirectChat = () => {
   }, []);
 
   const handleOnlineUsers = (data: OnlineUser[]) => {
-    console.log("Online users updated:", data);
     setOnlineUsers(data);
   };
 
   const handleNewMessage = (data: Messages) => {
-    console.log(data);
     if (data.senderId === currentUser.id) {
-      console.log("yess");
       dispatch(addMessage(data));
     }
 
     const topChat = usersRef.current.find((user) => user._id === data.senderId);
-    console.log(topChat);
     if (topChat) {
       const updatedTopChat = { ...topChat, lastMessage: data };
-      console.log("workin");
       const filteredUsers = usersRef.current.filter(
         (user) => user._id !== data.senderId
       );
@@ -91,11 +85,11 @@ const DirectChat = () => {
     const decryptMessages = async () => {
       const newDecryptedMessages = { ...decryptedMessages };
       let hasNewMessages = false;
-    
+
       const messagesToDecrypt = messages.filter(
         (msg) => !newDecryptedMessages[msg._id]
       );
-    
+
       for (const msg of messagesToDecrypt) {
         try {
           if (!msg?.isImage) {
@@ -104,7 +98,7 @@ const DirectChat = () => {
               msg.encryptedSessionKeyReceiver,
               msg.encryptedSessionKeySender
             );
-    
+
             if (result?.decryptedText) {
               newDecryptedMessages[msg._id] = result.decryptedText;
               hasNewMessages = true;
@@ -118,7 +112,7 @@ const DirectChat = () => {
               msg.encryptedSessionKeyReceiver,
               msg.encryptedSessionKeySender
             );
-    
+
             if (result?.decryptedText) {
               newDecryptedMessages[msg._id] = result.decryptedText;
               hasNewMessages = true;
@@ -133,7 +127,7 @@ const DirectChat = () => {
           hasNewMessages = true;
         }
       }
-    
+
       if (hasNewMessages) {
         setDecryptedMessages(newDecryptedMessages);
       }
@@ -147,9 +141,6 @@ const DirectChat = () => {
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const publicKeySender = localStorage.getItem("publicKeySender");
-    const publicKeyReciever = currentUser.publicKey;
-    if (!publicKeyReciever || !publicKeySender) return
 
     const reader = new FileReader();
     reader.onload = async () => {
@@ -164,24 +155,7 @@ const DirectChat = () => {
         senderId: localStorage.getItem("myUserId")!,
         text: reader.result as string,
       };
-      const updatedMessages = [imgMessage, ...messages];
-      dispatch(setMessages(updatedMessages));
-      const { file, encryptedSessionKeyReceiver, encryptedSessionKeySender } = encryptionDirectImg(publicKeyReciever, publicKeySender, reader.result as string);
-      const formData = new FormData();
-      formData.append("image", file);
-      formData.append("senderId", localStorage.getItem("myUserId")!);
-      formData.append("recieverId", currentUser.id);
-      formData.append("encryptedSessionKeyReceiver", encryptedSessionKeyReceiver)
-      formData.append("encryptedSessionKeySender", encryptedSessionKeySender)
-
-      try {
-        await axios.post(
-          "http://localhost:3000/common/imageUpload",
-          formData
-        );
-      } catch (error) {
-        console.error("Upload failed:", error);
-      }
+      sendImage(reader.result as string)
     };
     reader.readAsDataURL(file);
   };
@@ -189,7 +163,7 @@ const DirectChat = () => {
   const handleKeyDownSendMessage = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      sendMessageOnClickChat(currentUser, text, messages);
+      sendMessageOnClickChat(text);
     }
   };
 
@@ -221,8 +195,8 @@ const DirectChat = () => {
                   </div>
                 ) : (
                   <img
-                 src={ message.text || decryptedMessages[message._id] }
-                    alt=""
+                    src={decryptedMessages[message._id]}
+                    alt="IMAGE UPLOADING"
                     className={`h-50 w-50 bg-white object-cover 
                   ${isSender ? "self-end" : "self-start"}`}
                   />
@@ -255,7 +229,7 @@ const DirectChat = () => {
             />
             <button
               onClick={() =>
-                sendMessageOnClickChat(currentUser, text, messages)
+                sendMessageOnClickChat(text)
               }
               className="bg-[#084e6a] px-5 py-3 rounded-xl absolute right-0 hover:bg-[#0a5c7d] transition-colors"
             >

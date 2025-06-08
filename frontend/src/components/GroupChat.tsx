@@ -62,7 +62,6 @@ const GroupChat = () => {
     }
 
     const topChat = groups.find((group) => group._id === data.groupId);
-    console.log(topChat);
     if (topChat) {
       const updatedTopChat = {
         ...topChat,
@@ -71,7 +70,6 @@ const GroupChat = () => {
           encryptedText: data.encryptedText,
         },
       };
-      console.log("workin");
       const filteredGroups = groups.filter(
         (group) => group._id !== data.groupId
       );

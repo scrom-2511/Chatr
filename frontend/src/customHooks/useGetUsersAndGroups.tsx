@@ -24,7 +24,6 @@ const useGetUsersAndGroups = () => {
           message.recieverId === user._id || message.senderId === user._id
       ),
     }));
-    console.log(usersWithLastMessage);
     const sortedUsersWithLastMessage = usersWithLastMessage.sort(
       (a: any, b: any) => {
         if(a.lastMessage && b.lastMessage){
@@ -52,8 +51,6 @@ const useGetUsersAndGroups = () => {
         withCredentials: true,
       }
     );
-
-    console.log(lastMessageReq.data);
 
     const groupsWithLastMessage = groupsReq.data.map((group: any) => ({
       ...group,

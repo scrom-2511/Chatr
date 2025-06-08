@@ -29,9 +29,7 @@ export const addUserToGroupStep1Controller = async (
 ): Promise<Response> => {
   const { userId, groupId } = req.body;
   const group = await Group.findById(groupId);
-  console.log(group, userId,groupId)
   const encryptedEncryptionKey = group?.allMembersEncryptedGroupKeys.get(userId);
-  console.log(encryptedEncryptionKey)
   return res.json(encryptedEncryptionKey);
 };
 
